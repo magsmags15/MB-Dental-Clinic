@@ -897,9 +897,11 @@
             if(!db) return;
             
             // 1. KUNIN ANG MGA DENTISTA (Pinalitan ang "users" ng "public_doctors" at ginawang hiwalay na try-catch)
+            // 1. KUNIN ANG MGA DENTISTA
             try {
                 window.BK.doctors = [];
-                const qDoc = query(collection(db, "public_doctors"));
+                // Ibinalik sa 'users' collection at idinagdag ulit ang role filter
+                const qDoc = query(collection(db, "users"), where("role", "==", "dentist"));
                 const snapDoc = await getDocs(qDoc);
                 snapDoc.forEach(d => {
                     const data = d.data();
@@ -907,7 +909,7 @@
                     window.BK.doctors.push({ id: d.id, name: data.name, work_days: data.work_days || [1,1,1,1,1,1,1] });
                 });
             } catch(e) { 
-                console.error("Error loading dentists from public_doctors:", e); 
+                console.error("Error loading dentists:", e); 
             }
 
             // 2. KUNIN ANG MGA SERBISYO (Hiwalay na try-catch para hindi maapektuhan kung pumalya ang dentists)
