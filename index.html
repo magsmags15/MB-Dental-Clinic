@@ -895,26 +895,32 @@
         // FETCH DATA MULA SA FIREBASE
         async function fetchInitialData() {
             if(!db) return;
+            
+            // 1. KUNIN ANG MGA DENTISTA (Pinalitan ang "users" ng "public_doctors" at ginawang hiwalay na try-catch)
             try {
-                // Kunin ang mga Dentista
                 window.BK.doctors = [];
-                const qDoc = query(collection(db, "users"), where("role", "==", "dentist"));
+                const qDoc = query(collection(db, "public_doctors"));
                 const snapDoc = await getDocs(qDoc);
                 snapDoc.forEach(d => {
                     const data = d.data();
                     if(data.active === false) return;
                     window.BK.doctors.push({ id: d.id, name: data.name, work_days: data.work_days || [1,1,1,1,1,1,1] });
                 });
+            } catch(e) { 
+                console.error("Error loading dentists from public_doctors:", e); 
+            }
 
-                // Kunin ang mga Serbisyo
+            // 2. KUNIN ANG MGA SERBISYO (Hiwalay na try-catch para hindi maapektuhan kung pumalya ang dentists)
+            try {
                 window.BK.services = [];
                 const snapSvc = await getDocs(collection(db, "services"));
                 snapSvc.forEach(d => window.BK.services.push({ id: d.id, ...d.data() }));
+            } catch(e) { 
+                console.error("Error loading services:", e); 
+            }
 
-                // Populate Home at Services Pages gamit ang kinuha sa Database
-                populatePages();
-
-            } catch(e) { console.error("Error loading data from Firebase", e); }
+            // 3. I-POPULATE ANG PAGES (Tatakbo kahit mag-error ang isa sa taas)
+            populatePages();
         }
 
         // TAGA-GENERATE NG CARDS SA HOME AT SERVICES TABS
